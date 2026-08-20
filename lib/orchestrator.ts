@@ -44,9 +44,10 @@ export class RAGOrchestrator {
       grounded: true,
     };
 
+    let query = input.query || '';
+
     try {
       // --- Stage 1: Transcribe audio (voice only) ---
-      let query = input.query || '';
 
       if (input.type === 'voice' && input.audio) {
         const sttStart = performance.now();
@@ -195,8 +196,8 @@ export class RAGOrchestrator {
 
       const response: RAGResponse = {
         requestId,
-        transcript: input.type === 'voice' ? input.query : undefined,
-        query: input.query || '',
+        transcript: input.type === 'voice' && query.trim() ? query : undefined,
+        query,
         answer: safeErr.message,
         sources: [],
         latency,

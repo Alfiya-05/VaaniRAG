@@ -17,8 +17,10 @@ export function useRAGQuery() {
   const [pipelineState, setPipelineState] = useState<PipelineState>('idle');
   const [response, setResponse] = useState<RAGResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isVoiceQuery, setIsVoiceQuery] = useState(false);
 
   const queryText = useCallback(async (query: string) => {
+    setIsVoiceQuery(false);
     setError(null);
     setPipelineState('searching');
 
@@ -48,6 +50,7 @@ export function useRAGQuery() {
   }, []);
 
   const queryVoice = useCallback(async (audioBlob: Blob) => {
+    setIsVoiceQuery(true);
     setError(null);
     setPipelineState('transcribing');
 
@@ -87,11 +90,13 @@ export function useRAGQuery() {
     setPipelineState('idle');
     setResponse(null);
     setError(null);
+    setIsVoiceQuery(false);
   }, []);
 
   const restore = useCallback((savedResponse: RAGResponse) => {
     setError(null);
     setResponse(savedResponse);
+    setIsVoiceQuery(Boolean(savedResponse.transcript));
     setPipelineState('complete');
   }, []);
 
@@ -99,6 +104,7 @@ export function useRAGQuery() {
     pipelineState,
     response,
     error,
+    isVoiceQuery,
     queryText,
     queryVoice,
     reset,
