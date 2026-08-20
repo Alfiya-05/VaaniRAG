@@ -91,6 +91,7 @@ export interface RAGResponse {
     best_score: number;
   };
   error?: string;
+  errorStatusCode?: number;
 }
 
 export interface MetricsSnapshot {

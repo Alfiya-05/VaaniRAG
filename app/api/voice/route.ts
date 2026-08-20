@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       audioMimeType: mimeType,
     });
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { status: response.errorStatusCode && response.errorStatusCode >= 400 ? response.errorStatusCode : 200 });
   } catch (err) {
     console.error('[API /voice] Error:', err);
     return NextResponse.json(

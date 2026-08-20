@@ -208,6 +208,8 @@ export class RAGOrchestrator {
           chunks_used: 0,
           best_score: 0,
         },
+        error: safeErr.message,
+        errorStatusCode: safeErr.statusCode,
       };
 
       // Record failed metric

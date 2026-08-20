@@ -1,15 +1,27 @@
 /**
  * Sarvam AI Speech-to-Text implementation.
- * Uses the saaras:v3 model.
- * POST https://api.sarvam.ai/speech-to-text
+ * Uses the documented synchronous /speech-to-text REST contract.
  */
 
 import { STTService, STTResult } from './index';
 
+class SarvamApiError extends Error {
+  constructor(
+    public readonly status: number | null,
+    message: string,
+    public readonly retryable: boolean,
+  ) {
+    super(message);
+    this.name = 'SarvamApiError';
+  }
+}
+
 export class SarvamSTT implements STTService {
   private apiKey: string;
+  private model = process.env.SARVAM_STT_MODEL || 'saaras:v3';
+  private languageCode = process.env.SARVAM_LANGUAGE_CODE || 'unknown';
   private maxRetries = 1;
-  private timeoutMs = 5000;
+  private timeoutMs = 30000;
 
   constructor() {
     this.apiKey = process.env.SARVAM_API_KEY || '';
@@ -19,13 +31,13 @@ export class SarvamSTT implements STTService {
   }
 
   getName(): string {
-    return 'sarvam-saaras-v3';
+    return `sarvam-${this.model}`;
   }
 
   async transcribe(audio: Buffer | ArrayBuffer, mimeType: string = 'audio/webm'): Promise<STTResult> {
     const start = performance.now();
-
     let lastError: Error | null = null;
+
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         const result = await this.callAPI(audio, mimeType);
@@ -38,14 +50,15 @@ export class SarvamSTT implements STTService {
         };
       } catch (err) {
         lastError = err as Error;
-        if (attempt < this.maxRetries) {
-          console.warn(`[SarvamSTT] Attempt ${attempt + 1} failed, retrying...`);
-          await new Promise(r => setTimeout(r, 500));
-        }
+        const retryable = err instanceof SarvamApiError ? err.retryable : true;
+        if (!retryable || attempt >= this.maxRetries) break;
+        const delayMs = 500 * (attempt + 1);
+        console.warn(`[SarvamSTT] Attempt ${attempt + 1} failed with a retryable error; retrying in ${delayMs}ms`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
       }
     }
 
-    throw new Error(`Sarvam STT failed after ${this.maxRetries + 1} attempts: ${lastError?.message}`);
+    throw new Error(`Sarvam STT failed: ${lastError?.message || 'unknown upstream error'}`);
   }
 
   private async callAPI(audio: Buffer | ArrayBuffer, mimeType: string): Promise<{
@@ -54,16 +67,26 @@ export class SarvamSTT implements STTService {
     language_code?: string;
   }> {
     const uint8 = audio instanceof Uint8Array ? audio : new Uint8Array(audio as ArrayBuffer);
+    const byteSize = uint8.byteLength;
+    if (byteSize === 0) {
+      throw new SarvamApiError(400, 'Audio payload is empty', false);
+    }
 
-    // Determine file extension from MIME type
-    const ext = mimeType.includes('wav') ? 'wav' : mimeType.includes('mp3') ? 'mp3' : 'webm';
-    
+    const normalizedMimeType = (mimeType || 'application/octet-stream').split(';', 1)[0].trim();
+    const ext = normalizedMimeType.includes('wav') ? 'wav' : normalizedMimeType.includes('mp3') ? 'mp3' : normalizedMimeType.includes('ogg') ? 'ogg' : 'webm';
+    const filename = `recording.${ext}`;
     const formData = new FormData();
-    const audioBytes = new Uint8Array(uint8.byteLength);
-    audioBytes.set(uint8);
-    const blob = new Blob([audioBytes.buffer], { type: mimeType });
-    formData.append('file', blob, `audio.${ext}`);
-    formData.append('model', 'saaras:v3');
+    const audioBytes = new Uint8Array(uint8);
+    const blob = new Blob([audioBytes], { type: normalizedMimeType });
+    console.debug('[SarvamSTT] Sending audio', {
+      mimeType: normalizedMimeType,
+      filename,
+      byteSize,
+    });
+    formData.append('file', blob, filename);
+    formData.append('model', this.model);
+    formData.append('mode', 'transcribe');
+    formData.append('language_code', this.languageCode);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
@@ -71,24 +94,37 @@ export class SarvamSTT implements STTService {
     try {
       const response = await fetch('https://api.sarvam.ai/speech-to-text', {
         method: 'POST',
-        headers: {
-          'api-subscription-key': this.apiKey,
-        },
+        headers: { 'api-subscription-key': this.apiKey },
         body: formData,
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Sarvam API error ${response.status}: ${errText}`);
+        const rawBody = await response.text();
+        const safeBody = rawBody.replace(/\s+/g, ' ').slice(0, 1000);
+        const retryable = response.status === 429 || response.status >= 500;
+        console.error('[SarvamSTT] Upstream request failed', {
+          status: response.status,
+          body: safeBody,
+          mimeType: normalizedMimeType,
+          filename,
+          byteSize,
+          languageCode: this.languageCode,
+        });
+        throw new SarvamApiError(response.status, `Sarvam API error ${response.status}: ${safeBody || 'empty response'}`, retryable);
       }
 
-      const data = await response.json();
+      const data = await response.json() as { transcript?: string; confidence?: number; language_code?: string };
       return {
         transcript: data.transcript || '',
         confidence: data.confidence,
         language_code: data.language_code,
       };
+    } catch (error) {
+      if (error instanceof SarvamApiError) throw error;
+      const message = error instanceof Error ? error.message : 'network request failed';
+      console.error('[SarvamSTT] Transport failure', { message, mimeType: normalizedMimeType, filename, byteSize });
+      throw new SarvamApiError(null, `Sarvam transport error: ${message}`, true);
     } finally {
       clearTimeout(timeout);
     }
