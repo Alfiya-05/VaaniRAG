@@ -3,7 +3,9 @@
  * All values are from actual measurements, never fabricated.
  */
 
-import { LatencyBreakdown, TokenUsage, GuardrailResult, MetricsSnapshot } from '@/lib/types';
+import { LatencyBreakdown, TokenUsage, GuardrailResult, MetricsSnapshot, RAGResponse } from '@/lib/types';
+
+export const SESSION_ANALYTICS_STORAGE_KEY = 'vaani-rag-session-analytics-v1';
 
 export interface RequestMetric {
   requestId: string;
@@ -22,7 +24,7 @@ export interface RequestMetric {
   success: boolean;
 }
 
-class MetricsTracker {
+export class MetricsTracker {
   private metrics: RequestMetric[] = [];
 
   record(metric: RequestMetric): void {
@@ -144,3 +146,61 @@ class MetricsTracker {
 }
 
 export const metricsTracker = new MetricsTracker();
+
+function isRequestMetric(value: unknown): value is RequestMetric {
+  if (!value || typeof value !== 'object') return false;
+  const metric = value as Partial<RequestMetric>;
+  return typeof metric.requestId === 'string'
+    && typeof metric.timestamp === 'string'
+    && typeof metric.query === 'string'
+    && (metric.type === 'text' || metric.type === 'voice')
+    && !!metric.latency
+    && typeof metric.latency.total === 'number'
+    && !!metric.guardrail
+    && typeof metric.guardrail.passed === 'boolean'
+    && !!metric.retrieval
+    && typeof metric.retrieval.chunks_retrieved === 'number'
+    && typeof metric.success === 'boolean';
+}
+
+export function readSessionMetrics(): RequestMetric[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_ANALYTICS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.every(isRequestMetric)) {
+      window.sessionStorage.removeItem(SESSION_ANALYTICS_STORAGE_KEY);
+      return [];
+    }
+    return parsed;
+  } catch {
+    try { window.sessionStorage.removeItem(SESSION_ANALYTICS_STORAGE_KEY); } catch { /* storage unavailable */ }
+    return [];
+  }
+}
+
+export function recordSessionMetric(metric: RequestMetric): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const existing = readSessionMetrics();
+    if (existing.some(item => item.requestId === metric.requestId)) return;
+    window.sessionStorage.setItem(SESSION_ANALYTICS_STORAGE_KEY, JSON.stringify([...existing, metric]));
+  } catch {
+    // Session analytics are additive; an unavailable store must not affect queries.
+  }
+}
+
+export function recordSessionResponse(response: RAGResponse, type: 'text' | 'voice'): void {
+  recordSessionMetric({
+    requestId: response.requestId,
+    timestamp: new Date().toISOString(),
+    query: response.query,
+    type,
+    latency: response.latency,
+    tokens: response.tokens,
+    retrieval: response.retrievalInfo,
+    guardrail: response.guardrail,
+    success: response.guardrail.passed,
+  });
+}

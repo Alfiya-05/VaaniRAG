@@ -89,6 +89,12 @@ export function useRAGQuery() {
     setError(null);
   }, []);
 
+  const restore = useCallback((savedResponse: RAGResponse) => {
+    setError(null);
+    setResponse(savedResponse);
+    setPipelineState('complete');
+  }, []);
+
   return {
     pipelineState,
     response,
@@ -96,6 +102,7 @@ export function useRAGQuery() {
     queryText,
     queryVoice,
     reset,
+    restore,
     setPipelineState,
   };
 }
