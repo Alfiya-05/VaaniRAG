@@ -366,7 +366,7 @@ export default function HomePage() {
     <main className="vaani-main">
       <section className="vaani-hero" aria-labelledby="hero-title">
         <div className="vaani-eyebrow"><span className="vaani-eyebrow-line" /> AI knowledge engine</div>
-        <h1 id="hero-title">Ask your knowledge base</h1>
+        <h1 id="hero-title">Ask your <span>knowledge base</span></h1>
         <p>Retrieve evidence. Generate answers grounded in your knowledge base.</p>
       </section>
 

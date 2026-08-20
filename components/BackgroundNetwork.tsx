@@ -77,8 +77,8 @@ export default function BackgroundNetwork({ subdued = false }: { subdued?: boole
 
       if (pointer.active && precisePointer && !reducedMotion) {
         const glow = context.createRadialGradient(pointer.x, cursorY, 0, pointer.x, cursorY, cursorRadius);
-        glow.addColorStop(0, `rgba(34, 211, 238, ${0.07 * opacityScale})`);
-        glow.addColorStop(1, 'rgba(34, 211, 238, 0)');
+        glow.addColorStop(0, `rgba(45, 212, 191, ${0.08 * opacityScale})`);
+        glow.addColorStop(1, 'rgba(45, 212, 191, 0)');
         context.fillStyle = glow;
         context.beginPath();
         context.arc(pointer.x, cursorY, cursorRadius, 0, Math.PI * 2);
@@ -86,7 +86,7 @@ export default function BackgroundNetwork({ subdued = false }: { subdued?: boole
       }
 
       context.save();
-      context.strokeStyle = `rgba(34, 211, 238, ${0.065 * opacityScale})`;
+      context.strokeStyle = `rgba(45, 212, 191, ${0.07 * opacityScale})`;
       context.lineWidth = 0.65;
       context.setLineDash([2, 9]);
       context.beginPath();
@@ -104,7 +104,7 @@ export default function BackgroundNetwork({ subdued = false }: { subdued?: boole
           const connectionLimit = localInfluence > 0.08 ? 205 : 145;
           if (distance > connectionLimit) continue;
           const opacity = (0.105 + localInfluence * 0.22) * opacityScale;
-          context.strokeStyle = `rgba(34, 211, 238, ${opacity})`;
+          context.strokeStyle = `rgba(45, 212, 191, ${opacity})`;
           context.lineWidth = localInfluence > 0.16 ? 1 : 0.65;
           context.beginPath();
           context.moveTo(a.x, a.y);
@@ -115,9 +115,9 @@ export default function BackgroundNetwork({ subdued = false }: { subdued?: boole
 
       points.forEach(({ node, x, y, influence }) => {
         const opacity = Math.min(0.7, node.opacity + influence * 0.38) * opacityScale;
-        context.fillStyle = `rgba(34, 211, 238, ${opacity})`;
+        context.fillStyle = node.radius > 3 ? `rgba(251, 146, 60, ${opacity})` : `rgba(45, 212, 191, ${opacity})`;
         if (node.radius > 3 || influence > 0.2) {
-          context.shadowColor = `rgba(34, 211, 238, ${Math.min(0.24, 0.08 + influence * 0.22) * opacityScale})`;
+          context.shadowColor = node.radius > 3 ? `rgba(251, 146, 60, ${Math.min(0.24, 0.08 + influence * 0.22) * opacityScale})` : `rgba(45, 212, 191, ${Math.min(0.24, 0.08 + influence * 0.22) * opacityScale})`;
           context.shadowBlur = influence > 0.1 ? 14 : 8;
         }
         context.beginPath();
@@ -131,7 +131,7 @@ export default function BackgroundNetwork({ subdued = false }: { subdued?: boole
         const y = wrap(particle.y * height + Math.cos(time * 0.00006 + particle.phase) * 9, height);
         const distance = Math.hypot(x - pointer.x, y - cursorY);
         const influence = pointer.active && precisePointer && !reducedMotion ? Math.max(0, 1 - distance / cursorRadius) : 0;
-        context.fillStyle = `rgba(103, 232, 249, ${(0.14 + influence * 0.32) * opacityScale})`;
+        context.fillStyle = `rgba(94, 234, 212, ${(0.14 + influence * 0.32) * opacityScale})`;
         context.beginPath();
         context.arc(x + (x - pointer.x) * influence * 0.02, y + (y - cursorY) * influence * 0.02, 0.8 + influence * 0.7, 0, Math.PI * 2);
         context.fill();

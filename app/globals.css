@@ -719,3 +719,141 @@ tr:hover td { background: rgba(99, 102, 241, 0.03); }
 @media (max-width: 980px) { .dash-metrics-grid { grid-template-columns: repeat(3,1fr); }.dash-pipeline { grid-template-columns: repeat(3,1fr); row-gap: 20px; }.dash-three-column { grid-template-columns: repeat(2,1fr); }.dash-three-column > :last-child { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .dash-header { padding: 12px 16px; flex-wrap: wrap; }.dash-header,.dash-nav { gap: 9px; }.dash-event-badge,.dash-view-badge,.dash-analytics-link { display: none; }.dash-main,.dash-loading { width: min(100% - 28px, 1180px); padding-top: 46px; }.dash-summary-grid,.dash-metrics-grid,.dash-two-column,.dash-three-column { grid-template-columns: 1fr; }.dash-metrics-grid { gap: 9px; }.dash-three-column > :last-child { grid-column: auto; }.dash-pipeline { grid-template-columns: repeat(2,1fr); }.dash-comparison-stack { grid-template-columns: 1fr; }.dash-section-inline { align-items: flex-start; }.dash-pipeline-stage-top b { font-size: 9px; }.dash-back-link { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { .dash-metric-card { transition: none; } }
+
+/* ===== GOA + AI VISUAL IDENTITY ===== */
+.vaani-home {
+  --v-bg: #050b12;
+  --v-surface: rgba(10, 24, 31, .78);
+  --v-elevated: rgba(16, 39, 46, .84);
+  --v-border: rgba(105, 193, 190, .17);
+  --v-border-hover: rgba(94, 234, 212, .42);
+  --v-text: #f5f7f5;
+  --v-secondary: #a2b8bd;
+  --v-muted: #6d858c;
+  --v-accent: #fb923c;
+  --v-success: #34d399;
+  --v-warning: #fbbf24;
+  background:
+    radial-gradient(ellipse at 50% 108%, rgba(251, 146, 60, .14), transparent 34%),
+    radial-gradient(ellipse at 15% 20%, rgba(45, 212, 191, .12), transparent 38%),
+    linear-gradient(145deg, #040a11 0%, #07151d 48%, #051018 100%);
+}
+.vaani-home::before {
+  background:
+    radial-gradient(circle at 70% 12%, rgba(45, 212, 191, .1), transparent 28rem),
+    linear-gradient(180deg, transparent 58%, rgba(251, 146, 60, .035) 100%);
+}
+.vaani-home::after,
+.vaani-dashboard::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -2%;
+  height: 30%;
+  pointer-events: none;
+  opacity: .42;
+  background:
+    radial-gradient(ellipse at 22% 100%, transparent 0 38%, rgba(45, 212, 191, .13) 38.3% 38.7%, transparent 39%),
+    radial-gradient(ellipse at 68% 100%, transparent 0 43%, rgba(251, 146, 60, .1) 43.3% 43.7%, transparent 44%);
+  transform: translateY(0) scaleX(1.05);
+  animation: vaani-coastal-drift 18s ease-in-out infinite alternate;
+}
+.vaani-header,
+.dash-header {
+  background: rgba(4, 12, 18, .82);
+  border-color: rgba(105, 193, 190, .18);
+}
+.vaani-brand span,
+.dash-brand span { color: #fb923c; }
+.vaani-event-badge,
+.dash-event-badge {
+  border-color: rgba(251, 146, 60, .38);
+  color: #fdba74;
+  background: rgba(251, 146, 60, .07);
+}
+.vaani-hero h1 { color: #f8faf9; }
+.vaani-hero h1 span {
+  background: linear-gradient(100deg, #fb923c 0%, #fbbf24 38%, #5eead4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.vaani-hero p { color: #9ab1b7; }
+.vaani-eyebrow-line,
+.dash-eyebrow i { background: #fb923c; }
+.vaani-composer {
+  background: rgba(7, 24, 31, .72);
+  border-color: rgba(105, 193, 190, .25);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .24), 0 0 40px rgba(45, 212, 191, .045);
+}
+.vaani-composer:focus-within {
+  border-color: rgba(94, 234, 212, .7);
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, .1), 0 16px 48px rgba(0, 0, 0, .28), 0 0 36px rgba(251, 146, 60, .06);
+}
+.vaani-submit-button,
+.vaani-submit-button.is-processing { background: #ea6f2e; box-shadow: 0 0 22px rgba(251, 146, 60, .22); }
+.vaani-submit-button:hover:not(:disabled) { background: #fb923c; color: #081016; }
+.vaani-icon-button:hover:not(:disabled),
+.vaani-speech-button:hover { color: #5eead4; }
+.vaani-composer.listening { border-color: rgba(94, 234, 212, .62); }
+.vaani-composer.listening .vaani-recording-dot { background: #5eead4; box-shadow: 0 0 0 4px rgba(94, 234, 212, .12), 0 0 16px rgba(251, 146, 60, .25); }
+.vaani-composer.listening .vaani-waveform span { background: linear-gradient(180deg, #fb923c, #5eead4); }
+.vaani-composer.listening .vaani-stop-button { background: rgba(251, 146, 60, .12); color: #fdba74; }
+.vaani-query-source,
+.vaani-pipeline-stage.active,
+.vaani-dash-view-badge { color: #5eead4; }
+.vaani-answer-panel,
+.vaani-loading-panel,
+.vaani-source-list,
+.vaani-source-item,
+.vaani-trace-grid div {
+  background: rgba(9, 25, 32, .76);
+  border-color: rgba(105, 193, 190, .17);
+}
+.vaani-status-badge.success { color: #6ee7b7; background: rgba(52, 211, 153, .1); }
+.vaani-status-badge.warning { color: #fcd34d; background: rgba(251, 191, 36, .1); }
+.vaani-answer-text,
+.vaani-query-echo p { color: #f1f6f4; }
+.vaani-pipeline-dot.active,
+.vaani-pipeline-stage.active .vaani-pipeline-dot { border-color: #5eead4; }
+.vaani-pipeline-stage.active .vaani-pipeline-dot > span,
+.vaani-processing-indicator span { background: #5eead4; box-shadow: 0 0 9px rgba(94, 234, 212, .48); }
+.vaani-processing-indicator i { background: rgba(251, 146, 60, .48); }
+.vaani-dashboard {
+  --d-bg: #050b12;
+  --d-surface: rgba(9, 25, 32, .8);
+  --d-elevated: rgba(16, 39, 46, .9);
+  --d-border: rgba(105, 193, 190, .17);
+  --d-hover: rgba(94, 234, 212, .45);
+  --d-text: #f5f7f5;
+  --d-secondary: #a2b8bd;
+  --d-muted: #6d858c;
+  --d-cyan: #5eead4;
+  background:
+    radial-gradient(ellipse at 50% 110%, rgba(251, 146, 60, .13), transparent 34%),
+    radial-gradient(ellipse at 12% 18%, rgba(45, 212, 191, .1), transparent 34%),
+    linear-gradient(145deg, #040a11 0%, #07151d 52%, #051018 100%);
+}
+.vaani-dashboard::before {
+  background: radial-gradient(circle at 76% 8%, rgba(45, 212, 191, .1), transparent 30rem);
+}
+.dash-view-badge { border-color: rgba(94, 234, 212, .25); color: #99f6e4; background: rgba(94, 234, 212, .06); }
+.dash-panel,
+.dash-metric-card,
+.dash-comparison-card,
+.dash-table-wrap { box-shadow: 0 16px 38px rgba(0, 0, 0, .2); }
+.dash-metric-card:hover,
+.dash-panel:hover,
+.dash-comparison-card:hover { box-shadow: 0 0 0 2px rgba(94, 234, 212, .05), 0 20px 42px rgba(0, 0, 0, .22); }
+.dash-panel-icon,
+.dash-comparison-title span,
+.dash-pipeline-node { color: #5eead4; }
+.dash-pipeline-track span { background: linear-gradient(90deg, #ea6f2e, #5eead4); }
+.dash-quality-bar .grounded { background: #34d399; }
+.dash-refresh-button:hover { border-color: rgba(251, 146, 60, .55); color: #fdba74; background: rgba(251, 146, 60, .07); }
+@keyframes vaani-coastal-drift { from { transform: translate3d(-1%, 1%, 0) scaleX(1.05); } to { transform: translate3d(1%, -3%, 0) scaleX(1.1); } }
+@media (prefers-reduced-motion: reduce) {
+  .vaani-home::after,
+  .vaani-dashboard::after { animation: none; }
+}
